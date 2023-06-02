@@ -1,5 +1,9 @@
 const fs = require("fs");
 
+const makeTwoDigits = (data) => {
+  return data.toString().padStart(2, "0");
+};
+
 // 오늘 날짜 구하기
 const today = new Date();
 const year = today.getFullYear();
@@ -8,26 +12,22 @@ const date = today.getDate();
 
 // 파일명 : 오늘 날짜 형식 만들기
 const dateFormatting = (year, month, date) => {
-  return `${year}-${month.toString().padStart(2, "0")}-${date
-    .toString()
-    .padStart(2, "0")}`;
+  return `${year}-${makeTwoDigits(month)}-${makeTwoDigits(date)}`;
 };
 
 const dateFormat = dateFormatting(year, month, date);
 
 // 폴더명 : 몇 주차인지 구하기
-const getWeekNumber = (date) => {
-  const startOfMonth = new Date(new Date().setDate(1));
-  const weekDay = startOfMonth.getDay();
-  return parseInt((weekDay - 1 + date) / 7) + 1;
+const getWeekNumber = (year, month, date) => {
+  const firstDayOfMonth = new Date(year, month - 1, 1);
+  const weekOfFirstDay = firstDayOfMonth.getDay();
+  return parseInt((weekOfFirstDay + date) / 7) + 1;
 };
 
-const week = getWeekNumber(date);
+const week = getWeekNumber(year, month, date);
 const weeks = ["첫째주", "둘째주", "셋째주", "넷째주", "다섯째주"];
 
-const dirName = `${year}-${month.toString().padStart(2, "0")}-${
-  weeks[week - 1]
-}`;
+const dirName = `${year}-${makeTwoDigits(month)}-${weeks[week - 1]}`;
 
 // 디렉토리 만들기
 const makeDir = (dirName) => {
@@ -44,7 +44,8 @@ const makeDir = (dirName) => {
 
 // 파일 만들기
 const makeFile = (dirName, dateFormat) => {
-  if (!fs.readFileSync(`${dirName}/${dateFormat}.md`)) {
+  // 만약 기존 파일이 이미 있다면 추가하지 않음.
+  if (!fs.existsSync(`${dirName}/${dateFormat}.md`)) {
     fs.writeFile(
       `${dirName}/${dateFormat}.md`,
       `# ${dateFormat}의 TIL`,
@@ -56,6 +57,8 @@ const makeFile = (dirName, dateFormat) => {
         }
       }
     );
+  } else {
+    console.log("이미 파일이 존재합니다.");
   }
 };
 
